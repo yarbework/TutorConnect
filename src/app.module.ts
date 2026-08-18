@@ -4,6 +4,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { environmentValidationSchema } from './config/env.validation';
 import { databaseConfig } from './config/database.config';
 import { CommonModule } from './common/common.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CommonModule } from './common/common.module';
         configService.get<TypeOrmModuleOptions>('database') as TypeOrmModuleOptions,
     }),
     CommonModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
