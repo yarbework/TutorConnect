@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { environmentValidationSchema } from './config/env.validation';
 import { databaseConfig } from './config/database.config';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { databaseConfig } from './config/database.config';
       useFactory: (configService: ConfigService) =>
         configService.get<TypeOrmModuleOptions>('database') as TypeOrmModuleOptions,
     }),
+    CommonModule,
   ],
   controllers: [],
   providers: [],
