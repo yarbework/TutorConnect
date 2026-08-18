@@ -37,7 +37,65 @@ export class AuthService {
     private readonly redisClient: Redis,
   ) {}
 
-  // ... (Keep existing register and verifyEmail methods exactly as they were) ...
+  async register(registerDto: RegisterDto): Promise<{ message: string }> {
+    const { email, password, role } = registerDto;
+
+    const password_hash = await this.hashingService.hash(password);
+    
+    const newUser = this.userRepository.create({
+      email,
+      password_hash,
+      role: role || UserRole.GUARDIAN,
+    });
+
+    let savedUser: User;
+    try {
+      savedUser = await this.userRepository.save(newUser);
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new ConflictException('A user with this email address already exists.');
+      }
+      this.logger.error('Database error during user registration', error.stack);
+      throw new InternalServerErrorException('An error occurred during registration.');
+    }
+
+    try {
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const redisKey = `email_verification:${verificationToken}`;
+      await this.redisClient.setex(redisKey, this.VERIFICATION_TOKEN_TTL, savedUser.id);
+
+      this.emailService.sendVerificationEmail(savedUser.email, verificationToken).catch((err) => {
+        this.logger.error(`Failed to send verification email to ${savedUser.email}`, err.stack);
+      });
+
+      return { message: 'Registration successful. Please check your email to verify your account.' };
+    } catch (error: any) {
+      this.logger.error('Redis error during token generation', error.stack);
+      throw new InternalServerErrorException('User created, but email dispatch failed.');
+    }
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    if (!token) {
+      throw new BadRequestException('Verification token is required.');
+    }
+
+    const redisKey = `email_verification:${token}`;
+    const userId = await this.redisClient.get(redisKey);
+
+    if (!userId) {
+      throw new BadRequestException('Invalid or expired verification token.');
+    }
+
+    const updateResult = await this.userRepository.update({ id: userId }, { is_email_verified: true });
+
+    if (updateResult.affected === 0) {
+      throw new InternalServerErrorException('Failed to update verification status.');
+    }
+
+    await this.redisClient.del(redisKey);
+    return { message: 'Email successfully verified. You may now log in.' };
+  }
 
   async login(loginDto: LoginDto): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password } = loginDto;
@@ -90,14 +148,14 @@ export class AuthService {
         { sub: userId, role },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRATION'),
+          expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRATION') as any,
         },
       ),
       this.jwtService.signAsync(
         { sub: userId, role },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION'),
+          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION') as any,
         },
       ),
     ]);

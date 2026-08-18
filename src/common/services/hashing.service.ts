@@ -5,17 +5,14 @@ import * as argon2 from 'argon2';
 export class HashingService {
   private readonly logger = new Logger(HashingService.name);
 
-  // OWASP Recommended Configuration for Argon2id
-  private readonly hashOptions: argon2.Options = {
-    type: argon2.argon2id,
-    memoryCost: 19456, // 19 MiB
-    timeCost: 2,       // 2 iterations
-    parallelism: 1,    // 1 thread
+  private readonly hashOptions = {
+    // Explicitly cast to the literal type 2 (Argon2id) required by the library definitions
+    type: argon2.argon2id as 2, 
+    memoryCost: 19456, 
+    timeCost: 2,       
+    parallelism: 1,    
   };
 
-  /**
-   * Hashes a plaintext string using Argon2id
-   */
   async hash(plaintext: string): Promise<string> {
     if (!plaintext) {
       throw new InternalServerErrorException('Cannot hash an empty value');
@@ -29,9 +26,6 @@ export class HashingService {
     }
   }
 
-  /**
-   * Compares a plaintext string against a stored Argon2id hash
-   */
   async verify(plaintext: string, hash: string): Promise<boolean> {
     if (!plaintext || !hash) {
       return false;
