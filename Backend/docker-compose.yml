@@ -8,7 +8,6 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-EnterpriseSecurePass2026!}
       POSTGRES_DB: ${DATABASE_NAME:-tutorconnect_db}
     ports:
-      # Maps external port (5434) to internal Postgres port (5432)
       - "${DATABASE_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data

@@ -1,8 +1,7 @@
 # compiled output
 /dist
-/node_modulesBackend/node_modules Backend/src Backend/test Backend/.env Backend/.gitignore Backend/.prettierrc Backend/envexample.js Backend/eslint.config.mjs Backend/nest-cli.json Backend/package-lock.json Backend/package.json Backend/README.md Backend/tsconfig.build.json Backend/tsconfig.json
+/node_modules
 /build
-node_modules
 
 # Logs
 logs
@@ -37,7 +36,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
-
 .env
 .env.development.local
 .env.test.local
