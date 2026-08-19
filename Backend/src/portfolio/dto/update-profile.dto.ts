@@ -1,6 +1,6 @@
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TeachingMode } from '../../common/enums/teaching-mode.enum';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { TeachingMode } from '../enums/teaching-mode.enum';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 45.0, description: 'Hourly tutoring rate in USD ($/hr)' })
@@ -34,7 +34,7 @@ export class UpdateProfileDto {
   @IsString()
   availabilityCalendar?: string;
 
-  @ApiPropertyOptional({ example: 'Ph.D. in Physics with over 10 years of academic experience.' })
+  @ApiPropertyOptional({ example: 'Experienced educator passionate about teaching AP Physics and Calculus.' })
   @IsOptional()
   @IsString()
   bio?: string;

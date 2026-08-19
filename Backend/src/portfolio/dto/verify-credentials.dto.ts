@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { VerificationStatus } from '../../common/enums/verification-status.enum';
+import { VerificationStatus } from '../enums/verification-status.enum';
 
 export class VerifyCredentialsDto {
   @ApiProperty({
