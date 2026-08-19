@@ -1,0 +1,50 @@
+services:
+  tutorconnect_postgres:
+    image: postgres:16-alpine
+    container_name: tutorconnect_postgres_srv
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-tutor_admin}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-EnterpriseSecurePass2026!}
+      POSTGRES_DB: ${DATABASE_NAME:-tutorconnect_db}
+    ports:
+      # Maps external port (5434) to internal Postgres port (5432)
+      - "${DATABASE_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tutorconnect_network
+    healthcheck:
+      # Fixed the postgres user flag mapping
+      test: ["CMD-SHELL", "pg_isready -U tutor_admin -d tutorconnect_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tutorconnect_redis:
+    image: redis:7-alpine
+    container_name: tutorconnect_redis_srv
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-RedisSecurePass2026!}
+    ports:
+      # Maps external port (6380) to internal Redis port (6379)
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tutorconnect_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-RedisSecurePass2026!}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tutorconnect_network:
+    driver: bridge
