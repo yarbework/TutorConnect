@@ -5,6 +5,7 @@ import { environmentValidationSchema } from './config/env.validation';
 import { databaseConfig } from './config/database.config';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     CommonModule,
     AuthModule,
+    PortfolioModule,
   ],
   controllers: [],
   providers: [],
