@@ -19,7 +19,7 @@ export default function PopularSubjects() {
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Popular Subjects</h2>
             <p className="text-slate-600 text-sm mt-1">Explore top categories with specialized, verified tutors</p>
           </div>
-          <Link href="/register" className="text-sm font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1 min-h-[44px]">
+          <Link href="/register" className="text-sm font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1 min-h-11">
             Browse All Subjects <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
