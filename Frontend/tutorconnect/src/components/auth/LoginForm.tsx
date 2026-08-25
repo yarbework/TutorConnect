@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Eye, EyeOff, Loader2, ArrowRight, AlertCircle, MailWarning } from 'lucide-react';
 import { authApi } from '@/src/lib/api/auth';
+import {parseJwt} from '../../lib/jwt';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -40,9 +41,22 @@ const onSubmit = async (data: LoginInput) => {
   try {
     const result = await authApi.login(data);
 
-    setAuth(result.user, result.token);
+    const decoded = parseJwt(result.accessToken);
 
-    router.push(result.user.role === 'TUTOR' ? '/tutor/dashboard' : '/guardian/dashboard');
+    if(!decoded || !decoded.role){
+      throw new Error('Invalid token structure received from server.');
+    }
+
+    const user = {
+      id: decoded.sub,
+      email: data.email,
+      role: decoded.role,
+      isEmailVerified: true,
+    };
+
+    setAuth(user, result.accessToken);
+
+    router.push(user.role === 'TUTOR' ? '/tutor/dashboard' : '/guardian/dashboard');
   } catch (err: any) {
     if (err.status === 401) {
       setAuthError({ type: 'UNAUTHORIZED', message: 'Invalid credentials. Please try again.' });

@@ -24,7 +24,7 @@ export default function RoleSelection() {
                 </p>
                 <Link
                   href="/register?role=GUARDIAN"
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-800 pt-1 min-h-[44px]"
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-800 pt-1 min-h-11"
                 >
                   Post a Tutoring Need <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -45,7 +45,7 @@ export default function RoleSelection() {
                 </p>
                 <Link
                   href="/register?role=TUTOR"
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-700 hover:text-blue-800 pt-1 min-h-[44px]"
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-700 hover:text-blue-800 pt-1 min-h-11"
                 >
                   Apply as a Tutor <ArrowRight className="w-4 h-4" />
                 </Link>

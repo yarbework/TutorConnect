@@ -8,7 +8,8 @@ export interface AuthResponse {
     role: 'TUTOR' | 'GUARDIAN';
     isEmailVerified: boolean;
   };
-  token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export const authApi = {
