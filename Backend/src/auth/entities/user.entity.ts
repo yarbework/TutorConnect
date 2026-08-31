@@ -27,6 +27,10 @@ export class User extends BaseAuditableEntity {
   is_email_verified!: boolean;
 
   // Storing the hash of the refresh token to invalidate sessions on demand
+  
   @Column({ type: 'varchar', length: 255, nullable: true })
   refresh_token_hash!: string | null;
+    tutorProfile: any;
+
+    
 }
