@@ -1,0 +1,30 @@
+export enum JobStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  IN_REVIEW = 'IN_REVIEW',
+  AWARDED = 'AWARDED',
+  COMPLETED = 'COMPLETED',
+  ARCHIVED = 'ARCHIVED',
+}
+
+export enum TargetGradeLevel {
+  KINDERGARTEN = 'KINDERGARTEN',
+  ELEMENTARY_LOWER = 'ELEMENTARY_LOWER', // Grades 1-3
+  ELEMENTARY_UPPER = 'ELEMENTARY_UPPER', // Grades 4-6
+  MIDDLE_SCHOOL = 'MIDDLE_SCHOOL',       // Grades 7-8
+  HIGH_SCHOOL = 'HIGH_SCHOOL',           // Grades 9-12
+  UNDERGRADUATE = 'UNDERGRADUATE',
+  ADULT = 'ADULT',
+}
+
+export enum TeachingMode {
+  ONLINE = 'ONLINE',
+  IN_PERSON_STUDENT_HOME = 'IN_PERSON_STUDENT_HOME',
+  IN_PERSON_TUTOR_HOME = 'IN_PERSON_TUTOR_HOME',
+}
+
+export enum PreferredGender {
+  ANY = 'ANY',
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+}
