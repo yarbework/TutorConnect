@@ -1,7 +1,7 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 
 export interface JwtUserPayload {
-  sub: string;
+  userId: string;
   email?: string;
   role?: string;
   [key: string]: any;
@@ -13,8 +13,12 @@ export const CurrentUser = createParamDecorator(
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user) {
-      return null;
+if (!user) {
+      throw new UnauthorizedException('User is not authenticated');
+    }
+
+    if (data === 'id' || data === 'sub' || data === 'userId') {
+      return user.id || user.userId || user.sub;
     }
 
     return data ? user[data] : user;

@@ -91,7 +91,6 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
-
   "overrides": {
     "linkify-it": "^5.0.2",
     "nodemailer": "$nodemailer"

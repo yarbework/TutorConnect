@@ -16,30 +16,28 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../auth/entities/user.entity';
 
 @Controller('api/v1/tutor')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TutorController {
   constructor(private readonly tutorService: TutorService) {}
 
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TUTOR)
+  @Roles(UserRole.TUTOR) 
   @Get('profile/me')
-  async getMyProfile(@CurrentUser('sub') userId: string) {
+  async getMyProfile(@CurrentUser('id') userId: string) {
     return this.tutorService.getOrCreateProfile(userId);
   }
 
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TUTOR)
   @Put('profile')
   async updateProfile(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() dto: UpdateTutorProfileDto,
   ) {
     return this.tutorService.updateProfile(userId, dto);
   }
 
 
-  @UseGuards(JwtAuthGuard)
   @Get('profile/:id')
   async getPublicProfile(@Param('id', ParseUUIDPipe) profileId: string) {
     return this.tutorService.getPublicProfile(profileId);
