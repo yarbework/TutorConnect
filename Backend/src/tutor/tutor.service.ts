@@ -20,6 +20,9 @@ export class TutorService {
   ) {}
 
   async getOrCreateProfile(userId: string): Promise<TutorProfile> {
+    if (!userId) {
+      throw new BadRequestException('User ID is missing or invalid in request');
+    }
     let profile = await this.tutorProfileRepository.findOne({
       where: { userId },
       relations: {

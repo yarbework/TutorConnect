@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
@@ -12,8 +12,10 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
+  setHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,21 +24,34 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      isHydrated: false,
+
       setAuth: (user, token) =>
         set({
           user,
           token,
           isAuthenticated: true,
         }),
-      logout: () =>
+        
+      logout: () =>{
+        localStorage.removeItem('tutorconnect-auth');
         set({
           user: null,
           token: null,
           isAuthenticated: false,
+        });
+      },
+      setHydrated: (state) =>
+        set({
+          isHydrated: state,
         }),
     }),
     {
       name: 'tutorconnect-auth',
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated(true);
+      },
     }
   )
 );

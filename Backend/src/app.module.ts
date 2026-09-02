@@ -6,6 +6,7 @@ import { databaseConfig } from './config/database.config';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
+import { TutorModule } from './tutor/tutor.module';
 
 @Module({
   imports: [
@@ -20,12 +21,16 @@ import { JobsModule } from './jobs/jobs.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get<TypeOrmModuleOptions>('database') as TypeOrmModuleOptions,
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
+        ...configService.get<TypeOrmModuleOptions>('database'),
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
     CommonModule,
     AuthModule,
     JobsModule,
+    TutorModule,
   ],
   controllers: [],
   providers: [],
