@@ -106,7 +106,7 @@ export default function Navbar() {
                         Browse Tutors
                       </Link>
                       <Link
-                        href="/guardian/jobs/new"
+                        href="/guardian/jobs"
                         className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition flex items-center gap-1"
                       >
                         <PlusCircle className="w-4 h-4" />

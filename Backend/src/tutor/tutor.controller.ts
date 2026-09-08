@@ -6,6 +6,7 @@ import {
   UseGuards,
   Param,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { TutorService } from './tutor.service';
 import { UpdateTutorProfileDto } from './dto/update-tutor-profile.dto';
@@ -25,8 +26,8 @@ export class TutorController {
   @Get('profile/me')
   async getMyProfile(@CurrentUser('id') userId: string) {
     return this.tutorService.getOrCreateProfile(userId);
-  }
-
+  } 
+ 
 
   @Roles(UserRole.TUTOR)
   @Put('profile')
@@ -35,6 +36,30 @@ export class TutorController {
     @Body() dto: UpdateTutorProfileDto,
   ) {
     return this.tutorService.updateProfile(userId, dto);
+  }
+
+
+  @Get('featured')
+  async getFeaturedTutors() {
+    return this.tutorService.getFeaturedTutors(4);
+  }
+
+
+  @Get()
+  async browseTutors(
+    @Query('subject') subject?: string,
+    @Query('city') city?: string,
+    @Query('maxRate') maxRate?: string,
+    @Query('deliveryMode') deliveryMode?: string,
+    @Query('gender') gender?: string,
+  ) {
+    return this.tutorService.searchTutors({
+      subject,
+      city,
+      maxRate: maxRate ? parseFloat(maxRate) : undefined,
+      deliveryMode,
+      gender,
+    });
   }
 
 
