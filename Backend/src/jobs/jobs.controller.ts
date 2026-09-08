@@ -29,14 +29,12 @@ export class JobsController {
     @Req() req: any,
     @Body() createJobDto: CreateJobPostDto,
   ) {
-    // We are now safely using userId from the JWT payload
     return this.jobsService.createJob(req.user.userId, createJobDto);
   }
 
   @Get('my-posts')
   @Roles(UserRole.GUARDIAN)
   async getMyJobs(@Req() req: any) {
-    // Also updated to userId here!
     return this.jobsService.getJobsByGuardian(req.user.userId);
   }
 

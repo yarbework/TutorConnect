@@ -1,39 +1,39 @@
 import DashboardStatsCard from '../shared/DashboardStatsCard';
-import { Briefcase, Users, CheckCircle2 } from 'lucide-react';
+import { Briefcase, Clock, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   activeJobsCount: number;
-  totalApplicantsCount: number;
-  hiredTutorsCount: number;
+  inReviewJobsCount: number;
+  hiredJobsCount: number;
 }
 
 export default function GuardianMetrics({
   activeJobsCount,
-  totalApplicantsCount,
-  hiredTutorsCount,
+  inReviewJobsCount,
+  hiredJobsCount,
 }: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <DashboardStatsCard
-        title="Active Job Posts"
+        title="Active Jobs"
         value={activeJobsCount}
-        subtitle="Currently open for tutors"
+        subtitle="Currently open to tutors"
         icon={Briefcase}
         iconColor="text-emerald-700"
         bgColor="bg-emerald-50"
       />
       <DashboardStatsCard
-        title="Total Applicants"
-        value={totalApplicantsCount}
-        subtitle="Tutor video pitches received"
-        icon={Users}
-        iconColor="text-blue-700"
-        bgColor="bg-blue-50"
+        title="In Review"
+        value={inReviewJobsCount}
+        subtitle="Applications under evaluation"
+        icon={Clock}
+        iconColor="text-amber-700"
+        bgColor="bg-amber-50"
       />
       <DashboardStatsCard
-        title="Hired Tutors"
-        value={hiredTutorsCount}
-        subtitle="Active learning engagements"
+        title="Hired Engagements"
+        value={hiredJobsCount}
+        subtitle="Active awarded tutoring"
         icon={CheckCircle2}
         iconColor="text-purple-700"
         bgColor="bg-purple-50"

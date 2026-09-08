@@ -77,12 +77,13 @@ export class TutorService {
   }
 
 
-  async getPublicProfile(profileId: string): Promise<Partial<TutorProfile>> {
+  async getPublicProfile(idOrUserId: string): Promise<Partial<TutorProfile>> {
     const profile = await this.tutorProfileRepository.findOne({
-      where: { id: profileId },
-      relations: {
-        user: true,
-      },
+      where: [
+        { id: idOrUserId },
+        { userId: idOrUserId },
+      ],
+      relations: { user: true },
     });
 
     if (!profile) {
@@ -91,5 +92,69 @@ export class TutorService {
 
     const { credentialsDocumentUrl, ...publicData } = profile;
     return publicData;
+  }
+
+  
+  async getFeaturedTutors(limit = 4): Promise<Partial<TutorProfile>[]> {
+    const tutors = await this.tutorProfileRepository.find({
+      where: { verificationStatus: VerificationStatus.APPROVED },
+      relations: { user: true },
+      order: { updatedAt: 'DESC' },
+      take: limit,
+    });
+
+    return tutors.map(({ credentialsDocumentUrl, ...publicData }) => publicData);
+  }
+
+
+  async searchTutors(filters: {
+    subject?: string;
+    city?: string;
+    maxRate?: number;
+    deliveryMode?: string;
+    gender?: string;
+  }): Promise<Partial<TutorProfile>[]> {
+    const query = this.tutorProfileRepository
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.user', 'user')
+      .where('profile.verificationStatus = :status', {
+        status: VerificationStatus.APPROVED,
+      });
+
+    if (filters.subject) {
+      query.andWhere('array_to_string(profile.subjects, \',\') ILIKE :subject', {
+        subject: `%${filters.subject}%`,
+      });
+    }
+
+    if (filters.city) {
+      query.andWhere('profile.cityOrSubcity ILIKE :city', {
+        city: `%${filters.city}%`,
+      });
+    }
+
+    if (filters.maxRate) {
+      query.andWhere('profile.hourlyRate <= :maxRate', {
+        maxRate: filters.maxRate,
+      });
+    }
+
+    if (filters.deliveryMode) {
+      query.andWhere(':deliveryMode = ANY(profile.deliveryModes)', {
+        deliveryMode: filters.deliveryMode,
+      });
+    }
+
+    if (filters.gender && filters.gender !== 'ANY') {
+      query.andWhere('profile.gender = :gender', {
+        gender: filters.gender,
+      });
+    }
+
+    query.orderBy('profile.updatedAt', 'DESC');
+
+    const tutors = await query.getMany();
+
+    return tutors.map(({ credentialsDocumentUrl, ...publicData }) => publicData);
   }
 }

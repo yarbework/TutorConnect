@@ -75,5 +75,5 @@ export class CreateJobPostDto {
 
   @IsOptional()
   @IsEnum(JobStatus)
-  status?: JobStatus; // Allows creating directly as DRAFT or PUBLISHED
+  status?: JobStatus; 
 }

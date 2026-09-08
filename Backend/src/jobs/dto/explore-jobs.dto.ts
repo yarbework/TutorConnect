@@ -14,7 +14,7 @@ export class ExploreJobsDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  @Min(0)
+  @Min(100)
   min_budget?: number;
 
   @IsOptional()
