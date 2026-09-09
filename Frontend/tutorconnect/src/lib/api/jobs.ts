@@ -2,8 +2,8 @@ import { apiClient } from './client';
 import { JobPost, JobStatus, ExploreJobsFilters } from '../../types/job';
 import { CreateJobPostInput } from '../validations/job';
 import {JobInvitation} from '../../types/job';
-
-
+import { JobApplication, ApplicationStatus, Wallet, WalletTransactionItem } from '../../types/application';
+import { ApplyJobInput } from '../validations/application';
 
 export const jobsApi = {
   createJob: (data: CreateJobPostInput) =>
@@ -14,6 +14,11 @@ export const jobsApi = {
 
   getMyJobs: () =>
     apiClient<JobPost[]>('/jobs/my-posts', {
+      method: 'GET',
+    }),
+
+  getJobById: (id: string) =>
+    apiClient<JobPost>(`/jobs/${id}`, {
       method: 'GET',
     }),
 
@@ -55,4 +60,38 @@ respondToInvitation: (id: string, status: 'ACCEPTED' | 'DECLINED') =>
     method: 'PATCH',
     body: JSON.stringify({ status }),
   }),
+
+getMyWallet: () =>
+    apiClient<Wallet>('/jobs/wallet/me', {
+      method: 'GET',
+    }),
+  
+  getWalletTransactions: () =>
+  apiClient<WalletTransactionItem[]>('/jobs/wallet/transactions', {
+    method: 'GET',
+  }),
+
+  applyToJob: (jobId: string, data: ApplyJobInput) =>
+    apiClient<JobApplication>(`/jobs/${jobId}/apply`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getMyApplications: () =>
+    apiClient<JobApplication[]>('/jobs/applications/my-proposals', {
+      method: 'GET',
+    }),
+
+  getJobApplicants: (jobId: string) =>
+    apiClient<JobApplication[]>(`/jobs/${jobId}/applicants`, {
+      method: 'GET',
+    }),
+
+  reviewApplication: (applicationId: string, status: ApplicationStatus) =>
+    apiClient<JobApplication>(`/jobs/applications/${applicationId}/review`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+
+
 };

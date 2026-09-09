@@ -23,10 +23,10 @@ export default function ConnectsBalanceCard({ balance, role }: Props) {
         </div>
 
         <Link
-          href="/connects/buy"
-          className="bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-extrabold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm min-h-10"
+          href="/wallet"
+          className="bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-extrabold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm min-h-[40px]"
         >
-          <Plus className="w-4 h-4" /> Top Up
+          <Coins className="w-4 h-4" /> Manage Wallet
         </Link>
       </div>
 

@@ -14,6 +14,7 @@ import TutorInvitationsInbox from '../../../components/dashboard/tutor/TutorInvi
 import { jobsApi } from '../../../lib/api/jobs';
 import { JobInvitation } from '../../../types/job';
 import { Loader2 } from 'lucide-react';
+import { JobApplication } from '@/src/types/application';
 
 export default function TutorDashboardPage() {
   const router = useRouter();
@@ -23,24 +24,28 @@ export default function TutorDashboardPage() {
   const [invitations, setInvitations] = useState<JobInvitation[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [myApplications, setMyApplications] = useState<JobApplication[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const fetchDashboardData = useCallback(async () => {
-    setIsLoadingData(true);
-    try {
-      await Promise.all([
-        fetchProfile(),
-        jobsApi.getMyInvitations().then((res) => setInvitations(res)).catch(() => []),
-      ]);
-    } catch (err) {
-      console.error('Failed to load dashboard data:', err);
-    } finally {
-      setIsLoadingData(false);
-    }
-  }, [fetchProfile]);
+const fetchDashboardData = useCallback(async () => {
+  setIsLoadingData(true);
+  try {
+    const [invites, apps] = await Promise.all([
+      jobsApi.getMyInvitations().catch(() => []),
+      jobsApi.getMyApplications().catch(() => []),
+      fetchProfile(),
+    ]);
+    setInvitations(invites);
+    setMyApplications(apps);
+  } catch (err) {
+    console.error('Failed to load dashboard data:', err);
+  } finally {
+    setIsLoadingData(false);
+  }
+}, [fetchProfile]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -89,11 +94,11 @@ export default function TutorDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <TutorMetrics
-              activeApplicationsCount={invitations.filter((i) => i.status === 'PENDING').length}
-              acceptedMatchesCount={invitations.filter((i) => i.status === 'ACCEPTED').length}
-              hourlyRate={Number(profile?.hourlyRate) || 300}
-            />
+                <TutorMetrics
+                  activeApplicationsCount={myApplications.filter((a) => a.status === 'SUBMITTED' || a.status === 'SHORTLISTED').length}
+                  acceptedMatchesCount={myApplications.filter((a) => a.status === 'ACCEPTED').length + invitations.filter((i) => i.status === 'ACCEPTED').length}
+                  hourlyRate={Number(profile?.hourlyRate) || 300}
+                />
           </div>
           <div>
             <ConnectsBalanceCard balance={20} role="TUTOR" />
@@ -102,7 +107,13 @@ export default function TutorDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <TutorProfileSummaryCard profile={profile} />
-          <TutorApplicationsList proposals={[]} />
+          <TutorApplicationsList
+            proposals={
+              myApplications as unknown as React.ComponentProps<
+                typeof TutorApplicationsList
+              >['proposals']
+            }
+          />
         </div>
 
       </main>
