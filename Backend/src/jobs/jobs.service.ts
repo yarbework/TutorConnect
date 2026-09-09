@@ -7,12 +7,16 @@ import { UpdateJobStatusDto } from './dto/update-job-status.dto';
 import { JobStateMachine } from './utils/job-state-machine';
 import { ExploreJobsDto } from './dto/explore-jobs.dto';
 import { JobStatus } from './enums/job.enums';
+import { JobInvitation, InvitationStatus } from './entities/job-invitation.entity';
+import { CreateInvitationDto, RespondInvitationDto } from './dto/invitation.dto';
 
 @Injectable()
 export class JobsService {
   constructor(
     @InjectRepository(JobPost)
     private readonly jobPostRepository: Repository<JobPost>,
+    @InjectRepository(JobInvitation)
+    private readonly invitationRepo: Repository<JobInvitation>,
   ) {}
 
   async createJob(guardianId: string, createJobDto: CreateJobPostDto): Promise<JobPost> {
@@ -81,4 +85,58 @@ export class JobsService {
     query.orderBy('job.createdAt', 'DESC');
     return query.getMany();
   }
+
+  async sendInvitation(guardianId: string, dto: CreateInvitationDto): Promise<JobInvitation> {
+  const job = await this.jobPostRepository.findOne({ where: { id: dto.job_id } });
+  if (!job) {
+    throw new NotFoundException('Job post not found');
+  }
+  if (job.guardian_id !== guardianId) {
+    throw new ForbiddenException('You do not own this job posting');
+  }
+
+  const invitation = this.invitationRepo.create({
+    job_id: dto.job_id,
+    guardian_id: guardianId,
+    tutor_id: dto.tutor_id,
+    message: dto.message,
+    status: InvitationStatus.PENDING,
+  });
+
+  return this.invitationRepo.save(invitation);
+}
+
+
+async getTutorInvitations(tutorId: string): Promise<JobInvitation[]> {
+  return this.invitationRepo.find({
+    where: { tutor_id: tutorId },
+    relations: {
+      job: true,
+      guardian: true,
+    },
+    order: { createdAt: 'DESC' },
+  });
+}
+
+
+async respondToInvitation(
+  invitationId: string,
+  tutorId: string,
+  dto: RespondInvitationDto,
+): Promise<JobInvitation> {
+  const invitation = await this.invitationRepo.findOne({
+    where: { id: invitationId },
+    relations: { job: true },
+  });
+
+  if (!invitation) {
+    throw new NotFoundException('Invitation not found');
+  }
+  if (invitation.tutor_id !== tutorId) {
+    throw new ForbiddenException('You cannot respond to another tutor’s invitation');
+  }
+
+  invitation.status = dto.status;
+  return this.invitationRepo.save(invitation);
+}
 }
