@@ -7,7 +7,8 @@ import {
   Param, 
   UseGuards, 
   Req,
-  Query
+  Query, 
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobPostDto } from './dto/create-job-post.dto';
@@ -18,6 +19,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/entities/user.entity';
 import { CreateInvitationDto, RespondInvitationDto } from './dto/invitation.dto';
+import { ApplyJobDto } from './dto/apply-job.dto';
+import { ReviewApplicationDto } from './dto/review-application.dto';
+
 
 @Controller('api/v1/jobs')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -75,5 +79,45 @@ async respondToInvitation(
     @Body() updateJobStatusDto: UpdateJobStatusDto,
   ) {
     return this.jobsService.updateJobStatus(id, req.user.userId, updateJobStatusDto);
+  }
+
+  @Post(':id/apply')
+  @Roles(UserRole.TUTOR)
+  async applyToJob(
+    @Req() req: any,
+    @Param('id', ParseUUIDPipe) jobId: string,
+    @Body() dto: ApplyJobDto,
+  ) {
+    return this.jobsService.applyToJob(jobId, req.user.userId, dto);
+  }
+
+  @Get('applications/my-proposals')
+  @Roles(UserRole.TUTOR)
+  async getMyApplications(@Req() req: any) {
+    return this.jobsService.getMyApplications(req.user.userId);
+  }
+
+  @Get(':id/applicants')
+  @Roles(UserRole.GUARDIAN)
+  async getJobApplicants(
+    @Req() req: any,
+    @Param('id', ParseUUIDPipe) jobId: string,
+  ) {
+    return this.jobsService.getJobApplicants(jobId, req.user.userId);
+  }
+
+  @Patch('applications/:id/review')
+  @Roles(UserRole.GUARDIAN)
+  async reviewApplication(
+    @Req() req: any,
+    @Param('id', ParseUUIDPipe) applicationId: string,
+    @Body() dto: ReviewApplicationDto,
+  ) {
+    return this.jobsService.reviewApplication(applicationId, req.user.userId, dto);
+  }
+
+  @Get('wallet/me')
+  async getMyWallet(@Req() req: any) {
+    return this.jobsService.getOrCreateWallet(req.user.userId);
   }
 }
