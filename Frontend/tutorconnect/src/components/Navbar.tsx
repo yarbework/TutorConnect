@@ -13,7 +13,8 @@ import {
   GraduationCap, 
   UserCheck,
   PlusCircle,
-  Briefcase
+  Briefcase,
+  Coins
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -135,6 +136,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {isMounted && isAuthenticated ? (
               <div className="flex items-center gap-4">
+                <Link
+                    href="/wallet"
+                    className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+                  >
+                    <Coins className="w-4 h-4 text-amber-500" />
+                    Wallet
+                  </Link>
                 {/* User Role Badge */}
                 <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
                   <div className={`p-1.5 rounded-lg ${isTutor ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
@@ -198,6 +206,13 @@ export default function Navbar() {
           {isMounted && isAuthenticated ? (
             <div className="space-y-3">
               <div className="p-3 bg-slate-50 rounded-xl flex items-center gap-3">
+                <Link
+                  href="/wallet"
+                  className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+                >
+                  <Coins className="w-4 h-4 text-amber-500" />
+                  Wallet
+                </Link>
                 <div className={`p-2 rounded-lg ${isTutor ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
                   {isTutor ? <UserCheck className="w-5 h-5" /> : <GraduationCap className="w-5 h-5" />}
                 </div>

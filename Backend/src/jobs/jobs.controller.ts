@@ -106,6 +106,11 @@ async respondToInvitation(
     return this.jobsService.getJobApplicants(jobId, req.user.userId);
   }
 
+  @Get(':id')
+  async getJobById(@Param('id', ParseUUIDPipe) jobId: string) {
+    return this.jobsService.getJobById(jobId);
+  }
+
   @Patch('applications/:id/review')
   @Roles(UserRole.GUARDIAN)
   async reviewApplication(
@@ -119,5 +124,10 @@ async respondToInvitation(
   @Get('wallet/me')
   async getMyWallet(@Req() req: any) {
     return this.jobsService.getOrCreateWallet(req.user.userId);
+  }
+
+  @Get('wallet/transactions')
+  async getMyWalletTransactions(@Req() req: any) {
+    return this.jobsService.getWalletTransactions(req.user.userId);
   }
 }

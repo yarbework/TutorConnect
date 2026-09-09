@@ -46,6 +46,19 @@ export class JobsService {
     });
   }
 
+  async getJobById(jobId: string): Promise<JobPost> {
+    const job = await this.jobPostRepository.findOne({
+      where: { id: jobId },
+      relations: { guardian: true },
+    });
+
+    if (!job) {
+      throw new NotFoundException(`Job post with ID '${jobId}' not found`);
+    }
+
+    return job;
+  }
+
   async updateJobStatus(
     jobId: string,
     guardianId: string,
@@ -302,6 +315,14 @@ async getOrCreateWallet(userId: string): Promise<Wallet> {
     }
 
     return saved;
+  }
+
+  async getWalletTransactions(userId: string): Promise<WalletTransaction[]> {
+    const wallet = await this.getOrCreateWallet(userId);
+    return this.dataSource.getRepository(WalletTransaction).find({
+      where: { walletId: wallet.id },
+      order: { createdAt: 'DESC' },
+    });
   }
 
 }

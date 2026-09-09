@@ -37,7 +37,7 @@ export default function TutorApplicationsList({ proposals }: Props) {
       <div className="p-5 border-b border-slate-100 flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-900">Recent Applications</h3>
         <Link href="/tutor/applications" className="text-xs font-bold text-blue-700 hover:underline">
-          View all
+          View all applications →
         </Link>
       </div>
 

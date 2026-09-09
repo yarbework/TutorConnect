@@ -1,20 +1,9 @@
-'use client';
-
 import { useState } from 'react';
 import { JobPost, JobStatus } from '../../types/job';
 import { jobsApi } from '../../lib/api/jobs';
-import { 
-  Clock, 
-  MapPin, 
-  Laptop, 
-  Coins, 
-  Users, 
-  ChevronDown, 
-  Archive, 
-  CheckCircle2, 
-  AlertCircle 
-} from 'lucide-react';
 import { toast } from 'sonner';
+import  Link  from 'next/link';
+import {Users} from 'lucide-react';
 
 interface Props {
   job: JobPost;
@@ -30,7 +19,6 @@ const STATUS_COLORS: Record<JobStatus, { bg: string; text: string }> = {
   ARCHIVED: { bg: 'bg-rose-50', text: 'text-rose-700' },
 };
 
-// Allowed transitions mapping from your backend JobStateMachine
 const ALLOWED_TRANSITIONS: Record<JobStatus, JobStatus[]> = {
   DRAFT: ['PUBLISHED', 'ARCHIVED'],
   PUBLISHED: ['IN_REVIEW', 'ARCHIVED', 'DRAFT'],
@@ -124,9 +112,17 @@ export default function GuardianJobCard({ job, onStatusChanged }: Props) {
         </div>
 
         <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/60">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Gender Pref</span>
+          <span className="text-[10px] uppercase font-bold text-slate-400 block">Gender</span>
           <span className="font-bold text-slate-800">{job.preferred_tutor_gender}</span>
         </div>
+      </div>
+      <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+          <Link
+            href={`/guardian/jobs/${job.id}/applicants`}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition min-h-[36px]"
+          >
+            <Users className="w-4 h-4 text-blue-600" /> Review Candidateddd Proposals
+          </Link>
       </div>
     </div>
   );
