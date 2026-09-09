@@ -41,6 +41,28 @@ export interface JobPost {
   updatedAt: string;
   
 }
+export interface JobInvitation {
+  id: string;
+  job_id: string;
+  guardian_id: string;
+  tutor_id: string;
+  message: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  createdAt: string;
+  job: {
+    id: string;
+    title: string;
+    subject: string;
+    grade_level: string;
+    max_hourly_budget: number;
+    teaching_mode: string;
+    city?: string;
+  };
+  guardian: {
+    id: string;
+    email: string;
+  };
+}
 
 export interface ExploreJobsFilters {
   subject?: string;

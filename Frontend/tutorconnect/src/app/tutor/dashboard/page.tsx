@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useTutorProfileStore } from '../../../store/useTutorProfileStore';
@@ -10,6 +10,9 @@ import ConnectsBalanceCard from '../../../components/dashboard/shared/ConnectsBa
 import TutorMetrics from '../../../components/dashboard/tutor/TutorMetrics';
 import TutorProfileSummaryCard from '../../../components/dashboard/tutor/TutorProfileSummaryCard';
 import TutorApplicationsList from '../../../components/dashboard/tutor/TutorApplicationsList';
+import TutorInvitationsInbox from '../../../components/dashboard/tutor/TutorInvitationsInbox';
+import { jobsApi } from '../../../lib/api/jobs';
+import { JobInvitation } from '../../../types/job';
 import { Loader2 } from 'lucide-react';
 
 export default function TutorDashboardPage() {
@@ -17,8 +20,33 @@ export default function TutorDashboardPage() {
   const { user, isAuthenticated, isHydrated } = useAuthStore();
   const { profile, fetchProfile } = useTutorProfileStore();
 
+  const [invitations, setInvitations] = useState<JobInvitation[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!isHydrated) return;
+    setMounted(true);
+  }, []);
+
+  const fetchDashboardData = useCallback(async () => {
+    setIsLoadingData(true);
+    try {
+      await Promise.all([
+        fetchProfile(),
+        jobsApi.getMyInvitations().then((res) => setInvitations(res)).catch(() => []),
+      ]);
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const hydrated = isHydrated ?? true;
+    if (!hydrated) return;
 
     if (!isAuthenticated) {
       router.replace('/login');
@@ -30,10 +58,10 @@ export default function TutorDashboardPage() {
       return;
     }
 
-    fetchProfile();
-  }, [isHydrated, isAuthenticated, user, router, fetchProfile]);
+    fetchDashboardData();
+  }, [mounted, isHydrated, isAuthenticated, user, router, fetchDashboardData]);
 
-  if (!isHydrated) {
+  if (!mounted || (isHydrated === false)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
@@ -44,19 +72,26 @@ export default function TutorDashboardPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
+
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+        
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Tutor Dashboard</h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-            Welcome back, <strong className="text-slate-900">{user?.email}</strong>
+            Welcome back, <strong className="text-slate-900">{user?.email}</strong>. Manage your direct job invitations and teaching portfolio.
           </p>
         </div>
+
+        <TutorInvitationsInbox
+          invitations={invitations}
+          onInvitationUpdated={fetchDashboardData}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <TutorMetrics
-              activeApplicationsCount={0}
-              acceptedMatchesCount={0}
+              activeApplicationsCount={invitations.filter((i) => i.status === 'PENDING').length}
+              acceptedMatchesCount={invitations.filter((i) => i.status === 'ACCEPTED').length}
               hourlyRate={Number(profile?.hourlyRate) || 300}
             />
           </div>
@@ -69,7 +104,9 @@ export default function TutorDashboardPage() {
           <TutorProfileSummaryCard profile={profile} />
           <TutorApplicationsList proposals={[]} />
         </div>
+
       </main>
+
       <Footer />
     </div>
   );

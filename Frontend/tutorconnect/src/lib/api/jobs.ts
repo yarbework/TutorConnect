@@ -1,6 +1,9 @@
 import { apiClient } from './client';
 import { JobPost, JobStatus, ExploreJobsFilters } from '../../types/job';
 import { CreateJobPostInput } from '../validations/job';
+import {JobInvitation} from '../../types/job';
+
+
 
 export const jobsApi = {
   createJob: (data: CreateJobPostInput) =>
@@ -20,6 +23,8 @@ export const jobsApi = {
       body: JSON.stringify({ status }),
     }),
 
+
+
   exploreJobs: (filters: ExploreJobsFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.subject) params.append('subject', filters.subject);
@@ -33,4 +38,21 @@ export const jobsApi = {
       method: 'GET',
     });
   },
+
+sendInvitation: (data: { job_id: string; tutor_id: string; message: string }) =>
+  apiClient<JobInvitation>('/jobs/invitations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+getMyInvitations: () =>
+  apiClient<JobInvitation[]>('/jobs/invitations/my-invitations', {
+    method: 'GET',
+  }),
+
+respondToInvitation: (id: string, status: 'ACCEPTED' | 'DECLINED') =>
+  apiClient<JobInvitation>(`/jobs/invitations/${id}/respond`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }),
 };

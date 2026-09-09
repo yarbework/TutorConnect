@@ -50,11 +50,20 @@ export default function RequestTutoringModal({ tutor, isOpen, onClose }: Props) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedJobId) {
+      toast.error('Please select a job post to attach to this invite');
+      return;
+    }
     setIsSubmitting(true);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      toast.success(`Tutoring invitation sent! The tutor will receive your request and schedule.`);
+  try {
+      await jobsApi.sendInvitation({
+        job_id: selectedJobId,
+        tutor_id: tutor.userId || tutor.id, 
+        message: customMessage,
+      });
+      toast.success('Invitation sent! The tutor has received your request on their dashboard.');
       onClose();
     } catch (err: any) {
       toast.error(err.message || 'Failed to send invitation.');
