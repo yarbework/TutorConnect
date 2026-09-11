@@ -14,7 +14,8 @@ import {
   UserCheck,
   PlusCircle,
   Briefcase,
-  Coins
+  Coins,
+  MessageSquare
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -137,6 +138,13 @@ export default function Navbar() {
             {isMounted && isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <Link
+                    href="/messages"
+                    className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+                  >
+                    <MessageSquare className="w-4 h-4 text-blue-600" />
+                    Messages
+                </Link>
+                <Link
                     href="/wallet"
                     className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
                   >
@@ -206,6 +214,13 @@ export default function Navbar() {
           {isMounted && isAuthenticated ? (
             <div className="space-y-3">
               <div className="p-3 bg-slate-50 rounded-xl flex items-center gap-3">
+                <Link
+                    href="/messages"
+                    className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+                  >
+                    <MessageSquare className="w-4 h-4 text-blue-600" />
+                    Messages
+                </Link>
                 <Link
                   href="/wallet"
                   className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"

@@ -7,6 +7,7 @@ import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { TutorModule } from './tutor/tutor.module';
+import { EngagementsModule } from './engagements/engagements.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TutorModule } from './tutor/tutor.module';
     AuthModule,
     JobsModule,
     TutorModule,
+    EngagementsModule,
   ],
   controllers: [],
   providers: [],
