@@ -14,6 +14,7 @@ import { ExploreJobsDto } from './dto/explore-jobs.dto';
 import { JobStatus } from './enums/job.enums';
 import { JobInvitation, InvitationStatus } from './entities/job-invitation.entity';
 import { CreateInvitationDto, RespondInvitationDto } from './dto/invitation.dto';
+import { EngagementsService } from '../engagements/engagements.service';
 
 const APPLICATION_CONNECTS_COST = 2; 
 
@@ -29,6 +30,7 @@ export class JobsService {
     @InjectRepository(Wallet)
     private readonly walletRepo: Repository<Wallet>,
     private readonly dataSource: DataSource,
+    private readonly engagementsService: EngagementsService,
   ) {}
 
   async createJob(guardianId: string, createJobDto: CreateJobPostDto): Promise<JobPost> {
@@ -312,6 +314,13 @@ async getOrCreateWallet(userId: string): Promise<Wallet> {
     if (dto.status === ApplicationStatus.ACCEPTED) {
       application.job.status = JobStatus.AWARDED;
       await this.jobPostRepository.save(application.job);
+
+      await this.engagementsService.createEngagement(
+        application.job_id,
+        guardianId,
+        application.tutor_id,
+        Number(application.proposed_rate),
+      );
     }
 
     return saved;

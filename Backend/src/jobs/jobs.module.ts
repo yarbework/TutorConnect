@@ -8,6 +8,7 @@ import { WalletTransaction } from './entities/wallet-transaction.entity'; // ⭐
 import { JobsService } from './jobs.service';
 import { JobsController } from './jobs.controller';
 import { AuthModule } from '../auth/auth.module';
+import { EngagementsModule } from '../engagements/engagements.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from '../auth/auth.module';
       WalletTransaction
     ]), 
     AuthModule,
+    EngagementsModule,
   ],
   controllers: [JobsController],
   providers: [JobsService],
