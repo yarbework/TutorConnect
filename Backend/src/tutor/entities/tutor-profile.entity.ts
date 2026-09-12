@@ -105,6 +105,17 @@ export class TutorProfile {
   @Column({ type: 'jsonb', default: {} })
     availability!: AvailabilityMatrix;
 
+  @Column({
+    type: 'numeric', 
+    precision: 3, 
+    scale: 2, 
+    default: 0.0
+  })
+  averageRating!: number;
+
+  @Column({ type: 'int', default: 0 })
+  totalReviews!: number;  
+
   @CreateDateColumn({ name: 'created_at' })
     createdAt!: Date;
 

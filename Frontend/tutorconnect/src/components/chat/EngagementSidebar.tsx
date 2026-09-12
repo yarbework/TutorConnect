@@ -46,19 +46,19 @@ export default function EngagementSidebar({
             }`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-black text-slate-900 truncate">
-                {eng.job?.title || 'Tutoring Engagement'}
-              </span>
-              <span
-                className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shrink-0 ${
-                  isActive
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-slate-100 text-slate-600'
-                }`}
-              >
-                {eng.status}
-              </span>
-            </div>
+                <span className="text-xs font-black text-slate-900 truncate">
+                  {eng.job?.title || 'Tutoring Engagement'}
+                </span>
+                <span
+                  className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                    isActive
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  {eng.status}
+                </span>
+              </div>
 
             <p className="text-xs text-slate-600 truncate">
               {isGuardian ? 'Tutor: ' : 'Guardian: '}

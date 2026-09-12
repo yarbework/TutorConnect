@@ -3,12 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Engagement, EngagementMessage } from '../../types/engagement';
 import { engagementsApi } from '../../lib/api/engagements';
+import { reviewsApi } from '../../lib/api/reviews';
 import ChatMessageItem from './ChatMessageItem';
+import ReviewModal from '../reviews/ReviewModal';
 import { 
   Send, 
   CheckCircle2, 
   Loader2, 
-  Info,
+  Info, 
+  Sparkles, 
+  Star 
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +32,8 @@ export default function EngagementChatPane({
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isGuardian = currentUserId === engagement.guardianId;
@@ -43,15 +49,26 @@ export default function EngagementChatPane({
     engagementsApi
       .getMessages(engagement.id)
       .then((data) => {
-            setMessages(data);
-            setTimeout(scrollToBottom, 50);
-        })
+        setMessages(data);
+        setTimeout(scrollToBottom, 50);
+      })
       .catch((err) => {
-            toast.error('Failed to load messages');
-            console.error(err);
+        toast.error('Failed to load messages');
+        console.error(err);
       })
       .finally(() => setIsLoading(false));
   }, [engagement.id]);
+
+  useEffect(() => {
+    if (engagement.status === 'COMPLETED') {
+      reviewsApi
+        .getEngagementReviewStatus(engagement.id)
+        .then((res) => setHasReviewed(res.hasReviewed))
+        .catch(() => setHasReviewed(false));
+    } else {
+      setHasReviewed(null);
+    }
+  }, [engagement.id, engagement.status]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +110,7 @@ export default function EngagementChatPane({
       const updated = await engagementsApi.closeEngagement(engagement.id, 'COMPLETED');
       toast.success('Tutoring engagement concluded successfully.');
       onEngagementUpdated(updated);
+      setIsReviewModalOpen(true);
     } catch (err: any) {
       toast.error(err.message || 'Failed to close engagement');
     } finally {
@@ -120,7 +138,7 @@ export default function EngagementChatPane({
           </p>
         </div>
 
-        {!isClosed && (
+        {!isClosed ? (
           <button
             type="button"
             disabled={isClosing}
@@ -130,10 +148,19 @@ export default function EngagementChatPane({
             {isClosing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
             End Engagement
           </button>
+        ) : (
+          hasReviewed === false && (
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer min-h-[36px]"
+            >
+              <Star className="w-3.5 h-3.5 fill-slate-950" /> Rate Experience
+            </button>
+          )
         )}
       </div>
 
-      {/* Messages Stream */}
       <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-2">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
@@ -157,19 +184,14 @@ export default function EngagementChatPane({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Form */}
       <div className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200/80 shrink-0">
-        {isClosed ? (
-          <div className="text-center py-2 text-xs font-semibold text-slate-500 bg-slate-100 rounded-xl">
-            This engagement is concluded. Messaging is locked.
-          </div>
-        ) : (
+        {!isClosed ? (
           <form onSubmit={handleSendMessage} className="flex items-center gap-2">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type your message (agreed hours, location, direct payment details)..."
+              placeholder="Type your message (schedule, location, direct payment details)..."
               className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
             <button
@@ -181,8 +203,50 @@ export default function EngagementChatPane({
               Send
             </button>
           </form>
+        ) : (
+          hasReviewed === false ? (
+            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 text-amber-900">
+                <div className="p-2 bg-amber-100 rounded-xl text-amber-700 shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-black text-slate-900">Tutoring Concluded — Leave Feedback</p>
+                  <p className="text-slate-600 mt-0.5">
+                    Your rating and endorsement tags help build trust and verify performance on TutorConnect.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReviewModalOpen(true)}
+                className="px-5 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl transition shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 min-h-[38px]"
+              >
+                <Star className="w-4 h-4 fill-slate-950" /> Rate Your Experience
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-2.5 text-xs font-semibold text-slate-500 bg-slate-100 rounded-xl flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              Engagement completed • Feedback submitted
+            </div>
+          )
         )}
       </div>
+
+      {engagement && (
+        <ReviewModal
+          engagementId={engagement.id}
+          counterpartyLabel={isGuardian ? 'Tutor' : 'Guardian'}
+          isGuardian={isGuardian}
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          onSuccess={() => {
+            setIsReviewModalOpen(false);
+            setHasReviewed(true);
+          }}
+        />
+      )}
     </div>
   );
 }
