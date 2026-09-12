@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { TutorModule } from './tutor/tutor.module';
 import { EngagementsModule } from './engagements/engagements.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { EngagementsModule } from './engagements/engagements.module';
     JobsModule,
     TutorModule,
     EngagementsModule,
+    ReviewsModule
   ],
   controllers: [],
   providers: [],

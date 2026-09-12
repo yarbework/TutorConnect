@@ -9,8 +9,6 @@ import {
   X, 
   Video, 
   ExternalLink, 
-  Coins, 
-  Clock, 
   MessageSquare, 
   Loader2 
 } from 'lucide-react';
@@ -51,10 +49,9 @@ export default function ApplicantCard({ application, maxBudget, onStatusChanged 
   return (
     <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-4 hover:border-slate-300 transition">
       
-      {/* Header: Tutor Identity + Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="text-base font-bold text-slate-900">
               {application.tutor?.email || 'Applicant Tutor'}
             </h4>
@@ -67,7 +64,6 @@ export default function ApplicantCard({ application, maxBudget, onStatusChanged 
           </p>
         </div>
 
-        {/* Rate Comparison Box */}
         <div className="bg-slate-50 px-4 py-2 rounded-2xl border border-slate-200/60 text-right self-start sm:self-auto">
           <span className="text-sm font-black text-slate-900 block">
             {application.proposed_rate} <span className="text-xs font-normal text-slate-500">ETB/hr</span>
@@ -78,7 +74,6 @@ export default function ApplicantCard({ application, maxBudget, onStatusChanged 
         </div>
       </div>
 
-      {/* Pitch / Strategy Message */}
       <div className="space-y-1">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
           <MessageSquare className="w-3.5 h-3.5 text-blue-600" /> Teaching Strategy & Approach:
@@ -88,7 +83,6 @@ export default function ApplicantCard({ application, maxBudget, onStatusChanged 
         </p>
       </div>
 
-      {/* Video Pitch Link (If Provided) */}
       {application.video_pitch_url && (
         <div className="flex items-center justify-between p-3 bg-rose-50/60 border border-rose-200/60 rounded-xl text-xs">
           <span className="font-semibold text-rose-900 flex items-center gap-1.5">
@@ -105,7 +99,6 @@ export default function ApplicantCard({ application, maxBudget, onStatusChanged 
         </div>
       )}
 
-      {/* Review Action Controls */}
       <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-100">
         {application.status !== 'REJECTED' && (
           <button

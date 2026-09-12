@@ -35,4 +35,19 @@ export interface TutorProfile {
   updatedAt: string;
 }
 
-export type PublicTutorProfile = Omit<TutorProfile, 'credentialsDocumentUrl'>;
+
+export interface PublicTutorProfile {
+  id: string;
+  userId?: string;
+  gender: string;
+  cityOrSubcity?: string;
+  hourlyRate: number;
+  bio?: string;
+  subjects: string[];
+  deliveryModes: string[];
+  availability?: Record<string, { start: string; end: string }[]>;
+  youtubeVideoId?: string;
+  verificationStatus: string;
+  averageRating?: number | string; 
+  totalReviews?: number;          
+}
