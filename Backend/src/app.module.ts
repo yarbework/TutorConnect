@@ -9,6 +9,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { TutorModule } from './tutor/tutor.module';
 import { EngagementsModule } from './engagements/engagements.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { ReviewsModule } from './reviews/reviews.module';
     JobsModule,
     TutorModule,
     EngagementsModule,
-    ReviewsModule
+    ReviewsModule,
+    PaymentsModule
   ],
   controllers: [],
   providers: [],

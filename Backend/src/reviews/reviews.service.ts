@@ -120,4 +120,34 @@ export class ReviewsService {
     });
     return { hasReviewed: Boolean(existing) };
   }
+  async getEngagementReviews(
+    engagementId: string,
+    userId: string,
+  ): Promise<{
+    myReview: Review | null;
+    counterpartyReview: Review | null;
+  }> {
+    const engagement = await this.engagementRepo.findOne({
+      where: { id: engagementId },
+    });
+
+    if (!engagement) {
+      throw new NotFoundException('Engagement contract not found');
+    }
+
+    if (engagement.guardianId !== userId && engagement.tutorId !== userId) {
+      throw new ForbiddenException('You do not have access to this engagement’s reviews');
+    }
+
+    const reviews = await this.reviewRepo.find({
+      where: { engagementId },
+      relations: { reviewer: true },
+      order: { createdAt: 'ASC' },
+    });
+
+    const myReview = reviews.find((r) => r.reviewerId === userId) || null;
+    const counterpartyReview = reviews.find((r) => r.reviewerId !== userId) || null;
+
+    return { myReview, counterpartyReview };
+  }
 }

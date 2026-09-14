@@ -36,4 +36,13 @@ export class ReviewsController {
     const userId = req.user.userId || req.user.id || req.user.sub;
     return this.reviewsService.getEngagementReviewStatus(engagementId, userId);
   }
+
+  @Get('engagement/:engagementId')
+  async getEngagementReviews(
+    @Req() req: any,
+    @Param('engagementId', ParseUUIDPipe) engagementId: string,
+  ) {
+    const userId = req.user.userId || req.user.id || req.user.sub;
+    return this.reviewsService.getEngagementReviews(engagementId, userId);
+  }
 }

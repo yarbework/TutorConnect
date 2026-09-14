@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { jobsApi } from '../../lib/api/jobs';
-import {Wallet, WalletTransactionItem} from '../../types/application';
+import { paymentsApi } from '../../lib/api/payments';
+import { Wallet, WalletTransactionItem } from '../../types/application';
 import { useAuthStore } from '../../store/useAuthStore';
 import { 
   Coins, 
   ArrowUpRight, 
   ArrowDownLeft, 
-  Plus, 
   ShieldCheck, 
   Clock, 
   Zap, 
@@ -28,12 +29,15 @@ const CONNECTS_PACKS = [
   { id: 'pack-50', connects: 50, priceETB: 600, popular: false },
 ];
 
-export default function WalletPage() {
+function WalletContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isHydrated, isAuthenticated } = useAuthStore();
+
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<WalletTransactionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [purchasingPackId, setPurchasingPackId] = useState<string | null>(null);
 
   const loadWalletData = useCallback(async () => {
     setIsLoading(true);
@@ -45,25 +49,47 @@ export default function WalletPage() {
       setWallet(walletRes);
       setTransactions(ledgerRes);
     } catch (err) {
-      console.error('Failed to load wallet:', err);
+      console.error('Failed to load wallet data:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Initial load
   useEffect(() => {
     if (isHydrated && isAuthenticated) {
       loadWalletData();
     }
   }, [isHydrated, isAuthenticated, loadWalletData]);
 
-  const handleBuyPack = (pack: typeof CONNECTS_PACKS[0]) => {
-    setIsPurchasing(true);
-    toast.info(`Redirecting to Telebirr / Chapa checkout for ${pack.connects} Connects (${pack.priceETB} ETB)...`);
-    setTimeout(() => {
-      setIsPurchasing(false);
-      toast.success('Payment gateway integration will finalize checkout in Module 6.');
-    }, 1200);
+  // Handle return redirect from payment gateway (?payment=success / ?payment=failed)
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    if (!paymentStatus) return;
+
+    if (paymentStatus === 'success') {
+      toast.success('Payment verified! Your Connects balance has been credited.');
+      loadWalletData();
+    } else if (paymentStatus === 'failed') {
+      toast.error('Transaction was declined or cancelled.');
+    }
+
+    // Clean query parameters from URL without page reload
+    window.history.replaceState({}, '', '/wallet');
+  }, [searchParams, loadWalletData]);
+
+  // Dispatch real checkout creation
+  const handleBuyPack = async (pack: typeof CONNECTS_PACKS[0]) => {
+    setPurchasingPackId(pack.id);
+    try {
+      toast.info(`Initializing secure checkout for ${pack.connects} Connects...`);
+      const session = await paymentsApi.createCheckout(pack.id);
+
+      window.location.href = session.checkoutUrl;
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to initialize payment session.');
+      setPurchasingPackId(null);
+    }
   };
 
   const isTutor = user?.role === 'TUTOR';
@@ -147,43 +173,58 @@ export default function WalletPage() {
         <div className="space-y-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Purchase Connects Packs</h2>
-            <p className="text-xs text-slate-500">Secure instant top-ups via Telebirr or Chapa</p>
+            <p className="text-xs text-slate-500">Secure instant top-ups via Telebirr or CBE Birr</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {CONNECTS_PACKS.map((pack) => (
-              <div
-                key={pack.id}
-                className={`bg-white rounded-3xl border p-6 flex flex-col justify-between space-y-4 transition ${
-                  pack.popular
-                    ? 'border-blue-700 ring-2 ring-blue-700/20 shadow-md'
-                    : 'border-slate-200/80 hover:border-slate-300'
-                }`}
-              >
-                <div className="space-y-1">
-                  {pack.popular && (
-                    <span className="text-[10px] font-black uppercase text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full inline-block mb-1">
-                      Most Popular
-                    </span>
-                  )}
-                  <h3 className="text-2xl font-black text-slate-900">{pack.connects} Connects</h3>
-                  <p className="text-sm font-extrabold text-blue-800">{pack.priceETB} ETB</p>
-                </div>
+            {CONNECTS_PACKS.map((pack) => {
+              const isThisPurchasing = purchasingPackId === pack.id;
+              const isAnyPurchasing = purchasingPackId !== null;
 
-                <button
-                  type="button"
-                  disabled={isPurchasing}
-                  onClick={() => handleBuyPack(pack)}
-                  className={`w-full py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 min-h-[40px] cursor-pointer ${
+              return (
+                <div
+                  key={pack.id}
+                  className={`bg-white rounded-3xl border p-6 flex flex-col justify-between space-y-4 transition ${
                     pack.popular
-                      ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-sm'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                      ? 'border-blue-700 ring-2 ring-blue-700/20 shadow-md'
+                      : 'border-slate-200/80 hover:border-slate-300'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4" /> Buy Now
-                </button>
-              </div>
-            ))}
+                  <div className="space-y-1">
+                    {pack.popular && (
+                      <span className="text-[10px] font-black uppercase text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full inline-block mb-1">
+                        Most Popular
+                      </span>
+                    )}
+                    <h3 className="text-2xl font-black text-slate-900">{pack.connects} Connects</h3>
+                    <p className="text-sm font-extrabold text-blue-800">{pack.priceETB} ETB</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isAnyPurchasing}
+                    onClick={() => handleBuyPack(pack)}
+                    className={`w-full py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 min-h-[42px] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                      pack.popular
+                        ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-sm'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                    }`}
+                  >
+                    {isThisPurchasing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Initializing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        <span>Buy Now</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -232,5 +273,19 @@ export default function WalletPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
+        </div>
+      }
+    >
+      <WalletContent />
+    </Suspense>
   );
 }

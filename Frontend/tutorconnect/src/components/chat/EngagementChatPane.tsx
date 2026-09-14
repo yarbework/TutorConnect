@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Engagement, EngagementMessage } from '../../types/engagement';
 import { engagementsApi } from '../../lib/api/engagements';
 import { reviewsApi } from '../../lib/api/reviews';
@@ -15,6 +15,8 @@ import {
   Star 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import EngagementReviewsCard from './EngagementReviewsCard';
+import { Review } from '../../types/review';
 
 interface Props {
   engagement: Engagement;
@@ -40,6 +42,11 @@ export default function EngagementChatPane({
   const counterparty = isGuardian ? engagement.tutor?.email : engagement.guardian?.email;
   const isClosed = engagement.status !== 'ACTIVE';
 
+  const [engagementReviews, setEngagementReviews] = useState<{
+          myReview: Review | null;
+          counterpartyReview: Review | null;
+        }>({ myReview: null, counterpartyReview: null });
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -59,16 +66,21 @@ export default function EngagementChatPane({
       .finally(() => setIsLoading(false));
   }, [engagement.id]);
 
-  useEffect(() => {
-    if (engagement.status === 'COMPLETED') {
-      reviewsApi
-        .getEngagementReviewStatus(engagement.id)
-        .then((res) => setHasReviewed(res.hasReviewed))
-        .catch(() => setHasReviewed(false));
-    } else {
-      setHasReviewed(null);
-    }
-  }, [engagement.id, engagement.status]);
+const loadEngagementReviews = useCallback(() => {
+  if (engagement.status === 'COMPLETED') {
+    reviewsApi
+      .getEngagementReviews(engagement.id)
+      .then((res) => {
+        setEngagementReviews(res);
+        setHasReviewed(Boolean(res.myReview));
+      })
+      .catch((err) => console.error('Failed to load engagement reviews', err));
+  }
+}, [engagement.id, engagement.status]);
+
+useEffect(() => {
+  loadEngagementReviews();
+}, [loadEngagementReviews]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +197,8 @@ export default function EngagementChatPane({
       </div>
 
       <div className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200/80 shrink-0">
-        {!isClosed ? (
+      {!isClosed ? (
+        <div className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200/80 shrink-0">
           <form onSubmit={handleSendMessage} className="flex items-center gap-2">
             <input
               type="text"
@@ -203,35 +216,29 @@ export default function EngagementChatPane({
               Send
             </button>
           </form>
-        ) : (
-          hasReviewed === false ? (
-            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3 text-amber-900">
-                <div className="p-2 bg-amber-100 rounded-xl text-amber-700 shrink-0">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-black text-slate-900">Tutoring Concluded — Leave Feedback</p>
-                  <p className="text-slate-600 mt-0.5">
-                    Your rating and endorsement tags help build trust and verify performance on TutorConnect.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsReviewModalOpen(true)}
-                className="px-5 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl transition shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 min-h-[38px]"
-              >
-                <Star className="w-4 h-4 fill-slate-950" /> Rate Your Experience
-              </button>
-            </div>
-          ) : (
-            <div className="text-center py-2.5 text-xs font-semibold text-slate-500 bg-slate-100 rounded-xl flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              Engagement completed • Feedback submitted
-            </div>
-          )
-        )}
+        </div>
+      ) : (
+        <EngagementReviewsCard
+          myReview={engagementReviews.myReview}
+          counterpartyReview={engagementReviews.counterpartyReview}
+          counterpartyRoleLabel={isGuardian ? 'Tutor' : 'Guardian'}
+          onOpenReviewModal={() => setIsReviewModalOpen(true)}
+        />
+      )}
+
+      {engagement && (
+        <ReviewModal
+          engagementId={engagement.id}
+          counterpartyLabel={isGuardian ? 'Tutor' : 'Guardian'}
+          isGuardian={isGuardian}
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          onSuccess={() => {
+            setIsReviewModalOpen(false);
+            loadEngagementReviews(); 
+          }}
+        />
+      )}
       </div>
 
       {engagement && (
