@@ -14,10 +14,10 @@ export const timeSlotSchema = z.object({
 export const tutorProfileSchema = z.object({
   bio: z.string().max(1000, 'Bio cannot exceed 1000 characters').optional().or(z.literal('')),
   hourlyRate: z
-    .number({ invalid_type_error: 'Enter a valid hourly rate' })
+    .number({ error: 'Enter a valid hourly rate' })
     .min(100, 'Minimum rate is 100 ETB/hr')
     .max(1000, 'Maximum rate is 1,000 ETB/hr'),
-  gender: z.enum(['MALE', 'FEMALE'], { required_error: 'Select your gender' }),
+  gender: z.enum(['MALE', 'FEMALE'], { error: 'Select your gender' }),
   youtubeVideoUrl: z
     .string()
     .regex(YOUTUBE_URL_REGEX, 'Must be a valid YouTube link')
@@ -33,7 +33,7 @@ export const tutorProfileSchema = z.object({
     .array(z.enum(['ONLINE', 'IN_PERSON_TUTOR_HOME', 'IN_PERSON_STUDENT_HOME']))
     .min(1, 'Select at least one delivery mode'),
   cityOrSubcity: z.string().min(2, 'Enter your city or subcity location (e.g. Addis Ababa, Bole)'),
-  availability: z.record(z.array(timeSlotSchema)).default({}),
+  availability: z.record(z.string(), z.array(timeSlotSchema)),
 });
 
 export type TutorProfileFormInput = z.infer<typeof tutorProfileSchema>;

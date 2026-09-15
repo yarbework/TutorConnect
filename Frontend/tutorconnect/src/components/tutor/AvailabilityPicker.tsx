@@ -3,7 +3,7 @@
 import { AvailabilityMatrix, DaySchedule } from '../../types/tutor';
 import { Calendar, Plus, Trash2 } from 'lucide-react';
 
-const DAYS: { key: keyof AvailabilityMatrix; label: string }[] = [
+const DAYS: { key: string; label: string }[] = [
   { key: 'monday', label: 'Monday' },
   { key: 'tuesday', label: 'Tuesday' },
   { key: 'wednesday', label: 'Wednesday' },
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function AvailabilityPicker({ value = {}, onChange }: Props) {
-  const addSlot = (dayKey: keyof AvailabilityMatrix) => {
+  const addSlot = (dayKey: string) => {
     const currentSlots = value[dayKey] || [];
     const newSlot: DaySchedule = { start: '09:00', end: '12:00' };
     onChange({
@@ -28,7 +28,7 @@ export default function AvailabilityPicker({ value = {}, onChange }: Props) {
     });
   };
 
-  const removeSlot = (dayKey: keyof AvailabilityMatrix, index: number) => {
+  const removeSlot = (dayKey: string, index: number) => {
     const currentSlots = value[dayKey] || [];
     const updated = currentSlots.filter((_, idx) => idx !== index);
     const copy = { ...value };
@@ -41,7 +41,7 @@ export default function AvailabilityPicker({ value = {}, onChange }: Props) {
   };
 
   const updateTime = (
-    dayKey: keyof AvailabilityMatrix,
+    dayKey: string,
     index: number,
     field: 'start' | 'end',
     timeVal: string
