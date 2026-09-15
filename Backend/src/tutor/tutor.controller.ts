@@ -17,33 +17,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../auth/entities/user.entity';
 
 @Controller('api/v1/tutor')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class TutorController {
   constructor(private readonly tutorService: TutorService) {}
-
-
-  @Roles(UserRole.TUTOR) 
-  @Get('profile/me')
-  async getMyProfile(@CurrentUser('id') userId: string) {
-    return this.tutorService.getOrCreateProfile(userId);
-  } 
- 
-
-  @Roles(UserRole.TUTOR)
-  @Put('profile')
-  async updateProfile(
-    @CurrentUser('id') userId: string,
-    @Body() dto: UpdateTutorProfileDto,
-  ) {
-    return this.tutorService.updateProfile(userId, dto);
-  }
-
-
-  @Get('featured')
-  async getFeaturedTutors() {
-    return this.tutorService.getFeaturedTutors(4);
-  }
-
 
   @Get()
   async browseTutors(
@@ -61,10 +36,38 @@ export class TutorController {
       gender,
     });
   }
-
+  
+  @Get('featured')
+  async getFeaturedTutors() {
+    return this.tutorService.getFeaturedTutors(4);
+  }
 
   @Get('profile/:id')
   async getPublicProfile(@Param('id', ParseUUIDPipe) profileId: string) {
     return this.tutorService.getPublicProfile(profileId);
   }
+
+  @Get('stats/public')
+  async getPublicStats() {
+    return this.tutorService.getPublicPlatformStats();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TUTOR) 
+  @Get('profile/me')
+  async getMyProfile(@CurrentUser('id') userId: string) {
+    return this.tutorService.getOrCreateProfile(userId);
+  } 
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TUTOR)
+  @Put('profile')
+  async updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateTutorProfileDto,
+  ) {
+    return this.tutorService.updateProfile(userId, dto);
+  }
+
+
 }

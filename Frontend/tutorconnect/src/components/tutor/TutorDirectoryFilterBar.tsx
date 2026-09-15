@@ -20,7 +20,7 @@ export default function TutorDirectoryFilterBar({ filters, onApply, onReset }: P
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="text-slate-600 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
             Subject

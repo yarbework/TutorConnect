@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Engagement, EngagementMessage } from '../../types/engagement';
 import { engagementsApi } from '../../lib/api/engagements';
 import { reviewsApi } from '../../lib/api/reviews';
+import { useEngagementSocket } from '../../hooks/useEngagementSocket';
 import ChatMessageItem from './ChatMessageItem';
 import ReviewModal from '../reviews/ReviewModal';
 import { 
@@ -12,7 +13,9 @@ import {
   Loader2, 
   Info, 
   Sparkles, 
-  Star 
+  Star,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import EngagementReviewsCard from './EngagementReviewsCard';
@@ -47,6 +50,14 @@ export default function EngagementChatPane({
           counterpartyReview: Review | null;
         }>({ myReview: null, counterpartyReview: null });
 
+  const {
+    isConnected,
+    isCounterpartyTyping,
+    onNewMessage,
+    emitSendMessage,
+    emitTyping,
+  } = useEngagementSocket(engagement.id);
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -65,6 +76,22 @@ export default function EngagementChatPane({
       })
       .finally(() => setIsLoading(false));
   }, [engagement.id]);
+
+  useEffect(() => {
+    const unsubscribe = onNewMessage((incomingMessage: EngagementMessage) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === incomingMessage.id)) {
+          return prev;
+        }
+        return [...prev, incomingMessage];
+      });
+      setTimeout(scrollToBottom, 20);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [onNewMessage]);
 
 const loadEngagementReviews = useCallback(() => {
   if (engagement.status === 'COMPLETED') {
@@ -89,6 +116,9 @@ useEffect(() => {
     const content = inputText.trim();
     setInputText('');
     setIsSending(true);
+    emitTyping(false);
+
+    emitSendMessage(content);
 
     const optimisticMsg: EngagementMessage = {
       id: `temp-${Date.now()}`,
@@ -109,6 +139,13 @@ useEffect(() => {
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    if (!isClosed) {
+      emitTyping(e.target.value.length > 0);
     }
   };
 
@@ -137,13 +174,21 @@ useEffect(() => {
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-black text-slate-900">{engagement.job?.title}</h3>
-            <span
-              className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                !isClosed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
-              }`}
-            >
-              {engagement.status}
-            </span>
+                <span
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                      isConnected ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {isConnected ? (
+                      <>
+                        <Wifi className="w-3 h-3 text-emerald-600" /> Live
+                      </>
+                    ) : (
+                      <>
+                        <WifiOff className="w-3 h-3 text-slate-400" /> Offline
+                      </>
+                    )}
+                  </span>
           </div>
           <p className="text-xs text-slate-500">
             Participant: <strong className="text-slate-800">{counterparty}</strong> • Agreed Rate: <strong className="text-blue-900 font-bold">{engagement.agreedHourlyRate} ETB/hr</strong>
@@ -193,6 +238,16 @@ useEffect(() => {
             />
           ))
         )}
+
+        {isCounterpartyTyping && (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 italic py-1 px-2 animate-pulse">
+            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+            <span>{counterparty} is typing...</span>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -203,7 +258,7 @@ useEffect(() => {
             <input
               type="text"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Type your message (schedule, location, direct payment details)..."
               className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />

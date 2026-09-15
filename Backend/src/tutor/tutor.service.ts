@@ -99,7 +99,10 @@ export class TutorService {
     const tutors = await this.tutorProfileRepository.find({
       where: { verificationStatus: VerificationStatus.APPROVED },
       relations: { user: true },
-      order: { updatedAt: 'DESC' },
+      order: { 
+        averageRating: 'DESC',
+        totalReviews: 'DESC', 
+      },
       take: limit,
     });
 
@@ -156,5 +159,15 @@ export class TutorService {
     const tutors = await query.getMany();
 
     return tutors.map(({ credentialsDocumentUrl, ...publicData }) => publicData);
+  }
+
+  async getPublicPlatformStats() {
+    const totalTutors = await this.tutorProfileRepository.count({
+      where: { verificationStatus: VerificationStatus.APPROVED },
+    });
+
+    return {
+      verifiedTutorsCount: totalTutors,
+    };
   }
 }
