@@ -11,6 +11,7 @@ import { Review, ReviewerRole } from './entities/review.entity';
 import { Engagement, EngagementStatus } from '../engagements/entities/engagement.entity';
 import { TutorProfile } from '../tutor/entities/tutor-profile.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { MoreThanOrEqual } from 'typeorm';
 
 @Injectable()
 export class ReviewsService {
@@ -149,5 +150,19 @@ export class ReviewsService {
     const counterpartyReview = reviews.find((r) => r.reviewerId !== userId) || null;
 
     return { myReview, counterpartyReview };
+  }
+  async getFeaturedReviews(limit = 3): Promise<Review[]> {
+    return this.reviewRepo.find({
+      where: {
+        reviewerRole: ReviewerRole.GUARDIAN,
+        rating: MoreThanOrEqual(4),
+      },
+      relations: {
+        reviewer: true,
+        engagement: { job: true },
+      },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
   }
 }

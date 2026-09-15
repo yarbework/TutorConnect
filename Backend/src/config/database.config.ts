@@ -15,5 +15,6 @@ export const databaseConfig = registerAs(
     entities: [User, JobPost], 
     synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
     logging: process.env.DATABASE_LOGGING === 'true',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   }),
 );

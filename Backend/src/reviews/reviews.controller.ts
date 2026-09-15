@@ -45,4 +45,8 @@ export class ReviewsController {
     const userId = req.user.userId || req.user.id || req.user.sub;
     return this.reviewsService.getEngagementReviews(engagementId, userId);
   }
+  @Get('featured')
+  async getFeaturedReviews() {
+    return this.reviewsService.getFeaturedReviews(3);
+  }
 }
